@@ -16,15 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Resume Forge CLI Demo"
+args = "Resume Forge Demo"
 
 [[workflows.workflow]]
-name = "Resume Forge CLI Demo"
+name = "Resume Forge Demo"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "resume-forge --help && echo \"---\" && resume-forge styles && echo \"---\" && resume-forge convert sample_resume.json output/demo.pdf --style professional && echo \"Generated demo PDF\" && resume-forge convert sample_resume.json output/demo.docx --style modern && echo \"Generated demo DOCX\""
+args = "echo \"Resume Forge CLI - Demo\" && resume-forge --version && resume-forge styles && echo \"---\" && resume-forge validate sample_resume.json && echo \"---\" && resume-forge convert sample_resume.json output/demo.pdf --style professional && echo \"PDF generated successfully!\" && ls -la output/"
 
 [workflows.workflow.metadata]
 outputType = "console"
