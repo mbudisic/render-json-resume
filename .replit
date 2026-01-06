@@ -29,3 +29,8 @@ args = "echo \"Resume Forge CLI - Demo\" && resume-forge --version && resume-for
 
 [workflows.workflow.metadata]
 outputType = "console"
+
+[userenv]
+
+[userenv.shared]
+GIT_URL = "https://mbudisic:${GIT_TOKEN}@github.com/mbudisic/render-json-resume.git"
