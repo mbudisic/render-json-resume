@@ -6,7 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from resume_forge.schema import Resume, Basics, Work, Education, Skill, Profile, Location, Project
+from resume_forge.schema import (
+    Resume, Basics, Work, Education, Skill, Profile, Location, Project,
+    Certificate, Publication, Award, Volunteer, Language, Interest, Reference
+)
 from resume_forge.generators import PDFGenerator, DOCXGenerator
 from resume_forge.generators.base import BaseGenerator
 
@@ -355,3 +358,594 @@ class TestHyperlinkGeneration:
         link = generator._make_link("https://example.com", "Example")
         
         assert 'color="' in link
+
+
+class TestGracefulMissingDates:
+    """Test that generators handle missing dates gracefully without errors."""
+    
+    def test_work_without_dates_pdf(self) -> None:
+        """Work experience without dates should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            work=[
+                Work(name="Company A", position="Developer"),
+                Work(name="Company B", position="Manager", startDate="2020-01"),
+                Work(name="Company C", position="Lead", endDate="2023-12"),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+            assert output_path.stat().st_size > 0
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_work_without_dates_docx(self) -> None:
+        """Work experience without dates should generate valid DOCX."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            work=[
+                Work(name="Company A", position="Developer"),
+                Work(name="Company B", position="Manager", startDate="2020-01"),
+            ]
+        )
+        generator = DOCXGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_education_without_dates_pdf(self) -> None:
+        """Education without dates should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            education=[
+                Education(institution="University A", area="CS"),
+                Education(institution="University B", studyType="PhD", startDate="2018"),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_education_without_dates_docx(self) -> None:
+        """Education without dates should generate valid DOCX."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            education=[
+                Education(institution="University A", area="CS"),
+            ]
+        )
+        generator = DOCXGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_certificates_without_dates_pdf(self) -> None:
+        """Certificates without dates should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            certificates=[
+                Certificate(name="Cert A"),
+                Certificate(name="Cert B", issuer="Org X"),
+                Certificate(name="Cert C", date="2022-06"),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_certificates_without_dates_docx(self) -> None:
+        """Certificates without dates should generate valid DOCX."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            certificates=[
+                Certificate(name="Cert A"),
+                Certificate(name="Cert B", issuer="Org X"),
+            ]
+        )
+        generator = DOCXGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_publications_without_dates_pdf(self) -> None:
+        """Publications without dates should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            publications=[
+                Publication(name="Paper A"),
+                Publication(name="Paper B", publisher="Journal X"),
+                Publication(name="Paper C", releaseDate="2021-03"),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_publications_without_dates_docx(self) -> None:
+        """Publications without dates should generate valid DOCX."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            publications=[
+                Publication(name="Paper A"),
+                Publication(name="Paper B", publisher="Journal X"),
+            ]
+        )
+        generator = DOCXGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_awards_without_dates_pdf(self) -> None:
+        """Awards without dates should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            awards=[
+                Award(title="Award A"),
+                Award(title="Award B", awarder="Organization"),
+                Award(title="Award C", date="2020-11"),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_volunteer_without_dates_pdf(self) -> None:
+        """Volunteer work without dates should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            volunteer=[
+                Volunteer(organization="Org A", position="Volunteer"),
+                Volunteer(organization="Org B", startDate="2019-01"),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+
+
+class TestGracefulMissingURLs:
+    """Test that generators handle missing URLs gracefully without errors."""
+    
+    def test_projects_without_urls_pdf(self) -> None:
+        """Projects without URLs should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            projects=[
+                Project(name="Project A"),
+                Project(name="Project B", description="A cool project"),
+                Project(name="Project C", url="https://example.com"),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_projects_without_urls_docx(self) -> None:
+        """Projects without URLs should generate valid DOCX."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            projects=[
+                Project(name="Project A"),
+                Project(name="Project B", description="A cool project"),
+            ]
+        )
+        generator = DOCXGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_certificates_without_urls_pdf(self) -> None:
+        """Certificates without URLs should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            certificates=[
+                Certificate(name="Cert A", issuer="Org"),
+                Certificate(name="Cert B", url="https://verify.com/cert"),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_publications_without_urls_pdf(self) -> None:
+        """Publications without URLs should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            publications=[
+                Publication(name="Paper A", publisher="Journal"),
+                Publication(name="Paper B", url="https://doi.org/paper"),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_profiles_without_urls_use_auto_generation_pdf(self) -> None:
+        """Profiles without explicit URLs should use auto-generated URLs."""
+        resume = Resume(
+            basics=Basics(
+                name="Test User",
+                profiles=[
+                    Profile(network="GitHub", username="testuser"),
+                    Profile(network="LinkedIn", username="testuser"),
+                    Profile(network="UnknownNetwork", username="testuser"),
+                ]
+            )
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+            assert output_path.stat().st_size > 0
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_profiles_without_urls_docx(self) -> None:
+        """Profiles without explicit URLs should generate valid DOCX."""
+        resume = Resume(
+            basics=Basics(
+                name="Test User",
+                profiles=[
+                    Profile(network="GitHub", username="testuser"),
+                    Profile(network="UnknownNetwork", username="testuser"),
+                ]
+            )
+        )
+        generator = DOCXGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_basics_without_url_pdf(self) -> None:
+        """Basics section without personal URL should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(
+                name="Test User",
+                email="test@example.com",
+                label="Developer",
+            )
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_basics_without_email_pdf(self) -> None:
+        """Basics section without email should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(
+                name="Test User",
+                label="Developer",
+                url="https://example.com",
+            )
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+
+
+class TestGracefulEmptyArrays:
+    """Test that generators handle empty arrays and highlights gracefully."""
+    
+    def test_work_with_empty_highlights_pdf(self) -> None:
+        """Work with empty highlights array should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            work=[
+                Work(name="Company", position="Developer", highlights=[]),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_skills_with_empty_keywords_pdf(self) -> None:
+        """Skills with empty keywords array should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            skills=[
+                Skill(name="Python", keywords=[]),
+                Skill(name="JavaScript"),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_education_with_empty_courses_pdf(self) -> None:
+        """Education with empty courses array should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            education=[
+                Education(institution="University", courses=[]),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_interests_with_empty_keywords_pdf(self) -> None:
+        """Interests with empty keywords should generate valid PDF."""
+        resume = Resume(
+            basics=Basics(name="Test User"),
+            interests=[
+                Interest(name="Reading", keywords=[]),
+                Interest(name="Gaming"),
+            ]
+        )
+        generator = PDFGenerator(resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+        finally:
+            output_path.unlink(missing_ok=True)
+
+
+class TestAllSectionsGeneration:
+    """Test generating documents with all resume sections populated."""
+    
+    @pytest.fixture
+    def complete_resume(self) -> Resume:
+        """Create a resume with all sections for coverage."""
+        return Resume(
+            basics=Basics(
+                name="Complete User",
+                label="Full-Stack Developer",
+                email="complete@example.com",
+                phone="+1-555-0100",
+                url="https://completeuser.dev",
+                summary="A developer with experience in all areas.",
+                location=Location(city="San Francisco", region="CA", countryCode="US"),
+                profiles=[
+                    Profile(network="GitHub", username="completeuser"),
+                    Profile(network="LinkedIn", url="https://linkedin.com/in/completeuser"),
+                ]
+            ),
+            work=[
+                Work(
+                    name="Big Tech",
+                    position="Senior Engineer",
+                    startDate="2020-01",
+                    summary="Led engineering team",
+                    highlights=["Shipped major feature", "Improved performance 50%"]
+                )
+            ],
+            education=[
+                Education(
+                    institution="Stanford",
+                    area="Computer Science",
+                    studyType="MS",
+                    startDate="2016-09",
+                    endDate="2018-06",
+                    courses=["Machine Learning", "Distributed Systems"]
+                )
+            ],
+            skills=[
+                Skill(name="Python", level="Expert", keywords=["Django", "FastAPI"]),
+                Skill(name="JavaScript", keywords=["React", "Node.js"]),
+            ],
+            projects=[
+                Project(
+                    name="Open Source CLI",
+                    description="A useful command-line tool",
+                    url="https://github.com/example/cli",
+                    startDate="2021-01",
+                    highlights=["Built with Python", "CLI tool"]
+                )
+            ],
+            certificates=[
+                Certificate(name="AWS Solutions Architect", issuer="Amazon", date="2022-03"),
+            ],
+            publications=[
+                Publication(
+                    name="Scaling Microservices",
+                    publisher="Tech Journal",
+                    releaseDate="2021-06",
+                    url="https://example.com/paper",
+                    summary="Best practices for microservice architecture"
+                )
+            ],
+            awards=[
+                Award(title="Employee of the Year", awarder="Big Tech", date="2021-12"),
+            ],
+            volunteer=[
+                Volunteer(
+                    organization="Code for Good",
+                    position="Mentor",
+                    startDate="2019-01",
+                    highlights=["Mentored 20+ students"]
+                )
+            ],
+            languages=[
+                Language(language="English", fluency="Native"),
+                Language(language="Spanish", fluency="Intermediate"),
+            ],
+            interests=[
+                Interest(name="Open Source", keywords=["Contributing", "Maintaining"]),
+            ],
+            references=[
+                Reference(name="Jane Manager", reference="Excellent developer and team player."),
+            ]
+        )
+    
+    def test_all_sections_pdf(self, complete_resume: Resume) -> None:
+        """Complete resume with all sections should generate valid PDF."""
+        generator = PDFGenerator(complete_resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+            assert output_path.stat().st_size > 1000
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_all_sections_docx(self, complete_resume: Resume) -> None:
+        """Complete resume with all sections should generate valid DOCX."""
+        generator = DOCXGenerator(complete_resume)
+        
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as f:
+            output_path = Path(f.name)
+        
+        try:
+            generator.generate(output_path)
+            assert output_path.exists()
+            assert output_path.stat().st_size > 1000
+        finally:
+            output_path.unlink(missing_ok=True)
+    
+    def test_all_sections_all_styles_pdf(self, complete_resume: Resume) -> None:
+        """Complete resume should work with all PDF styles."""
+        for style in ["professional", "modern", "elegant", "minimal"]:
+            generator = PDFGenerator(complete_resume, style=style)
+            
+            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+                output_path = Path(f.name)
+            
+            try:
+                generator.generate(output_path)
+                assert output_path.exists(), f"Style '{style}' failed"
+            finally:
+                output_path.unlink(missing_ok=True)

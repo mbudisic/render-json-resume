@@ -236,3 +236,134 @@ class TestCLISchemaCommand:
         expected_sections = ["basics", "work", "education", "skills", "projects"]
         for section in expected_sections:
             assert section in result.output
+    
+    def test_schema_lists_additional_sections(self, runner: CliRunner) -> None:
+        """Should list all additional resume sections."""
+        result = runner.invoke(main, ["schema"])
+        
+        additional_sections = ["certificates", "publications", "languages", "interests", "references"]
+        for section in additional_sections:
+            assert section in result.output
+
+
+class TestCLIErrorHandling:
+    """Test CLI error handling and edge cases."""
+    
+    @pytest.fixture
+    def runner(self) -> CliRunner:
+        """Create a CLI runner."""
+        return CliRunner()
+    
+    def test_convert_unsupported_format_fails(self, runner: CliRunner) -> None:
+        """Should fail for unsupported output formats."""
+        resume_data = {"basics": {"name": "Test"}}
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            input_file = Path(tmpdir) / "resume.json"
+            output_file = Path(tmpdir) / "resume.txt"
+            
+            with open(input_file, "w") as f:
+                json.dump(resume_data, f)
+            
+            result = runner.invoke(main, ["convert", str(input_file), str(output_file)])
+            
+            assert result.exit_code != 0
+            assert "unsupported" in result.output.lower() or "format" in result.output.lower()
+    
+    def test_convert_invalid_style_fails(self, runner: CliRunner) -> None:
+        """Should fail for invalid style option."""
+        resume_data = {"basics": {"name": "Test"}}
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            input_file = Path(tmpdir) / "resume.json"
+            output_file = Path(tmpdir) / "resume.pdf"
+            
+            with open(input_file, "w") as f:
+                json.dump(resume_data, f)
+            
+            result = runner.invoke(
+                main, 
+                ["convert", str(input_file), str(output_file), "--style", "nonexistent"]
+            )
+            
+            assert result.exit_code != 0
+    
+    def test_validate_invalid_json_fails(self, runner: CliRunner) -> None:
+        """Should fail gracefully for malformed JSON."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            input_file = Path(tmpdir) / "invalid.json"
+            
+            with open(input_file, "w") as f:
+                f.write("not valid json at all")
+            
+            result = runner.invoke(main, ["validate", str(input_file)])
+            
+            assert result.exit_code != 0
+    
+    def test_validate_nonexistent_file_fails(self, runner: CliRunner) -> None:
+        """Should fail gracefully for nonexistent file."""
+        result = runner.invoke(main, ["validate", "does_not_exist.json"])
+        
+        assert result.exit_code != 0
+    
+    def test_convert_empty_json_object_succeeds(self, runner: CliRunner) -> None:
+        """Should handle empty JSON object gracefully."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            input_file = Path(tmpdir) / "empty.json"
+            output_file = Path(tmpdir) / "empty.pdf"
+            
+            with open(input_file, "w") as f:
+                json.dump({}, f)
+            
+            result = runner.invoke(main, ["convert", str(input_file), str(output_file)])
+            
+            assert result.exit_code == 0
+            assert output_file.exists()
+    
+    def test_convert_creates_output_directory(self, runner: CliRunner) -> None:
+        """Should create output directory if it doesn't exist."""
+        resume_data = {"basics": {"name": "Test"}}
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            input_file = Path(tmpdir) / "resume.json"
+            output_file = Path(tmpdir) / "subdir" / "resume.pdf"
+            
+            with open(input_file, "w") as f:
+                json.dump(resume_data, f)
+            
+            result = runner.invoke(main, ["convert", str(input_file), str(output_file)])
+            
+            assert result.exit_code == 0
+            assert output_file.exists()
+
+
+class TestCLIVersionAndHelp:
+    """Test CLI version and help commands."""
+    
+    @pytest.fixture
+    def runner(self) -> CliRunner:
+        """Create a CLI runner."""
+        return CliRunner()
+    
+    def test_version_flag_shows_version(self, runner: CliRunner) -> None:
+        """--version should display version number."""
+        result = runner.invoke(main, ["--version"])
+        
+        assert result.exit_code == 0
+        assert "0." in result.output or "1." in result.output
+    
+    def test_help_flag_shows_commands(self, runner: CliRunner) -> None:
+        """--help should show available commands."""
+        result = runner.invoke(main, ["--help"])
+        
+        assert result.exit_code == 0
+        assert "convert" in result.output
+        assert "validate" in result.output
+        assert "styles" in result.output
+    
+    def test_convert_help_shows_options(self, runner: CliRunner) -> None:
+        """convert --help should show available options."""
+        result = runner.invoke(main, ["convert", "--help"])
+        
+        assert result.exit_code == 0
+        assert "--style" in result.output
