@@ -1,5 +1,11 @@
 # Resume Forge
 
+<!-- Replace YOUR-USERNAME with your GitHub username -->
+[![Tests](https://github.com/YOUR-USERNAME/resume-forge/actions/workflows/tests.yml/badge.svg)](https://github.com/YOUR-USERNAME/resume-forge/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/YOUR-USERNAME/resume-forge/branch/main/graph/badge.svg)](https://codecov.io/gh/YOUR-USERNAME/resume-forge)
+[![Replit](https://img.shields.io/badge/Developed%20on-Replit-F26207?logo=replit&logoColor=white)](https://replit.com)
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)](https://www.python.org/)
+
 A CLI utility to convert JSON Resume to native PDF or DOCX documents.
 
 ## Features
