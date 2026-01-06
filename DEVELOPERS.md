@@ -166,8 +166,7 @@ GitHub Actions workflow (`.github/workflows/tests.yml`):
 - Runs on push/PR to `main` or `master`
 - Sets up Python 3.11 with pip caching
 - Installs system fonts (Liberation Sans)
-- Runs pytest with coverage
-- Generates and commits `coverage.svg` badge
+- Runs pytest with coverage report
 
 ## Adding a New Style
 
