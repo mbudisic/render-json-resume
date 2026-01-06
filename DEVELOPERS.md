@@ -104,6 +104,9 @@ Click-based command-line interface.
 - `styles` - Lists available styles
 - `schema` - Shows JSON Resume schema info
 
+**URL Support:**
+Both `convert` and `validate` accept HTTP/HTTPS URLs as input. The `is_url()` helper detects URLs, and `fetch_json_from_url()` retrieves the content using Python's stdlib `urllib`.
+
 **To add a new command:** Use `@main.command()` decorator pattern.
 
 **To add a new CLI option:** Add to relevant command using Click decorators.

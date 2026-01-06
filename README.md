@@ -9,6 +9,7 @@ A CLI utility to convert JSON Resume to native PDF or DOCX documents.
 - Multiple built-in styles (professional, modern, elegant, minimal)
 - Full JSON Resume schema support
 - Cross-platform (Linux, macOS, Windows)
+- Fetch resumes from HTTP/HTTPS URLs (GitHub Gist, etc.)
 
 ## Installation
 
@@ -36,6 +37,12 @@ resume-forge convert resume.json output.pdf
 resume-forge convert resume.json output.docx
 ```
 
+### Convert from a URL (GitHub Gist, etc.)
+
+```bash
+resume-forge convert https://gist.githubusercontent.com/user/id/raw/resume.json output.pdf
+```
+
 ### Choose a style
 
 ```bash
@@ -48,6 +55,9 @@ Available styles: `professional`, `modern`, `elegant`, `minimal`
 
 ```bash
 resume-forge validate resume.json
+
+# Or validate from a URL
+resume-forge validate https://gist.githubusercontent.com/.../resume.json
 ```
 
 ### List available styles

@@ -3,6 +3,8 @@
 import json
 import sys
 from pathlib import Path
+from urllib.request import urlopen, Request
+from urllib.error import URLError, HTTPError
 
 import click
 from pydantic import ValidationError
@@ -12,6 +14,26 @@ from .generators import PDFGenerator, DOCXGenerator
 
 
 AVAILABLE_STYLES = ["professional", "modern", "elegant", "minimal"]
+
+
+def is_url(path: str) -> bool:
+    """Check if the given path is an HTTP/HTTPS URL."""
+    return path.startswith("http://") or path.startswith("https://")
+
+
+def fetch_json_from_url(url: str) -> dict:
+    """Fetch and parse JSON from a URL."""
+    request = Request(url, headers={"User-Agent": "resume-forge/0.1.0"})
+    try:
+        with urlopen(request, timeout=30) as response:
+            content = response.read().decode("utf-8")
+            return json.loads(content)
+    except HTTPError as e:
+        raise click.ClickException(f"HTTP error fetching URL: {e.code} {e.reason}")
+    except URLError as e:
+        raise click.ClickException(f"Error fetching URL: {e.reason}")
+    except json.JSONDecodeError as e:
+        raise click.ClickException(f"Invalid JSON from URL: {e}")
 
 
 @click.group()
@@ -26,7 +48,7 @@ def main():
 
 
 @main.command()
-@click.argument("input_file", type=click.Path(exists=True, path_type=Path))
+@click.argument("input_source")
 @click.argument("output_file", type=click.Path(path_type=Path))
 @click.option(
     "--format", "-f",
@@ -46,10 +68,10 @@ def main():
     default="letter",
     help="Page size for PDF output.",
 )
-def convert(input_file: Path, output_file: Path, format: str, style: str, page_size: str):
+def convert(input_source: str, output_file: Path, format: str, style: str, page_size: str):
     """Convert a JSON Resume file to PDF or DOCX.
     
-    INPUT_FILE: Path to the JSON Resume file.
+    INPUT_SOURCE: Path to JSON Resume file or HTTP/HTTPS URL.
     OUTPUT_FILE: Path for the output file (PDF or DOCX).
     
     Examples:
@@ -58,7 +80,7 @@ def convert(input_file: Path, output_file: Path, format: str, style: str, page_s
         
         resume-forge convert resume.json resume.docx --style modern
         
-        resume-forge convert resume.json output.pdf --style elegant --page-size a4
+        resume-forge convert https://gist.githubusercontent.com/.../resume.json output.pdf
     """
     output_format = format
     if output_format is None:
@@ -75,15 +97,23 @@ def convert(input_file: Path, output_file: Path, format: str, style: str, page_s
             )
             sys.exit(1)
     
-    try:
-        with open(input_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except json.JSONDecodeError as e:
-        click.echo(f"Error: Invalid JSON in input file: {e}", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"Error reading input file: {e}", err=True)
-        sys.exit(1)
+    if is_url(input_source):
+        click.echo(f"Fetching resume from URL...")
+        data = fetch_json_from_url(input_source)
+    else:
+        input_file = Path(input_source)
+        if not input_file.exists():
+            click.echo(f"Error: File not found: {input_source}", err=True)
+            sys.exit(1)
+        try:
+            with open(input_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except json.JSONDecodeError as e:
+            click.echo(f"Error: Invalid JSON in input file: {e}", err=True)
+            sys.exit(1)
+        except Exception as e:
+            click.echo(f"Error reading input file: {e}", err=True)
+            sys.exit(1)
     
     try:
         resume = Resume.model_validate(data)
@@ -157,22 +187,36 @@ def schema():
 
 
 @main.command()
-@click.argument("input_file", type=click.Path(exists=True, path_type=Path))
-def validate(input_file: Path):
+@click.argument("input_source")
+def validate(input_source: str):
     """Validate a JSON Resume file.
     
-    INPUT_FILE: Path to the JSON Resume file to validate.
+    INPUT_SOURCE: Path to JSON Resume file or HTTP/HTTPS URL.
+    
+    Examples:
+    
+        resume-forge validate resume.json
+        
+        resume-forge validate https://gist.githubusercontent.com/.../resume.json
     """
-    try:
-        with open(input_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except json.JSONDecodeError as e:
-        click.echo(f"Error: Invalid JSON: {e}", err=True)
-        sys.exit(1)
+    if is_url(input_source):
+        click.echo(f"Fetching resume from URL...")
+        data = fetch_json_from_url(input_source)
+    else:
+        input_file = Path(input_source)
+        if not input_file.exists():
+            click.echo(f"Error: File not found: {input_source}", err=True)
+            sys.exit(1)
+        try:
+            with open(input_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except json.JSONDecodeError as e:
+            click.echo(f"Error: Invalid JSON: {e}", err=True)
+            sys.exit(1)
     
     try:
         resume = Resume.model_validate(data)
-        click.echo(f"Valid JSON Resume file: {input_file}")
+        click.echo(f"Valid JSON Resume: {input_source}")
         
         sections = []
         if resume.basics:
