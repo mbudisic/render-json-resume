@@ -1,9 +1,12 @@
 """Native DOCX generator using python-docx."""
 
 from pathlib import Path
+from typing import Any
 
 from docx import Document
+from docx.document import Document as DocumentType
 from docx.shared import Inches, Pt, RGBColor
+from docx.text.paragraph import Paragraph
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.style import WD_STYLE_TYPE
 
@@ -14,7 +17,10 @@ from .base import BaseGenerator
 class DOCXGenerator(BaseGenerator):
     """Generate native DOCX documents from JSON Resume."""
     
-    STYLES = {
+    theme: dict[str, Any]
+    doc: DocumentType
+    
+    STYLES: dict[str, dict[str, Any]] = {
         "professional": {
             "primary_color": RGBColor(0x2c, 0x3e, 0x50),
             "secondary_color": RGBColor(0x7f, 0x8c, 0x8d),
@@ -41,13 +47,13 @@ class DOCXGenerator(BaseGenerator):
         },
     }
     
-    def __init__(self, resume: Resume, style: str = "professional"):
+    def __init__(self, resume: Resume, style: str = "professional") -> None:
         super().__init__(resume, style)
         self.theme = self.STYLES.get(style, self.STYLES["professional"])
         self.doc = Document()
         self._setup_document()
     
-    def _setup_document(self):
+    def _setup_document(self) -> None:
         """Set up document margins and base styles."""
         sections = self.doc.sections
         for section in sections:
@@ -102,11 +108,11 @@ class DOCXGenerator(BaseGenerator):
         font_size: int = 11,
         bold: bool = False,
         italic: bool = False,
-        color: RGBColor = None,
+        color: RGBColor | None = None,
         alignment: WD_ALIGN_PARAGRAPH = WD_ALIGN_PARAGRAPH.LEFT,
         space_after: int = 6,
         space_before: int = 0,
-    ):
+    ) -> Paragraph:
         """Add a formatted paragraph to the document."""
         para = self.doc.add_paragraph()
         para.alignment = alignment
@@ -123,7 +129,7 @@ class DOCXGenerator(BaseGenerator):
         
         return para
     
-    def _add_section_title(self, title: str):
+    def _add_section_title(self, title: str) -> Paragraph:
         """Add a section title."""
         para = self._add_paragraph(
             title,
@@ -135,7 +141,7 @@ class DOCXGenerator(BaseGenerator):
         )
         return para
     
-    def _build_header(self):
+    def _build_header(self) -> None:
         """Build the header section."""
         basics = self.resume.basics
         
@@ -205,7 +211,7 @@ class DOCXGenerator(BaseGenerator):
                 space_after=12,
             )
     
-    def _build_work_section(self):
+    def _build_work_section(self) -> None:
         """Build the work experience section."""
         self._add_section_title("EXPERIENCE")
         
@@ -251,7 +257,7 @@ class DOCXGenerator(BaseGenerator):
                     )
                     para.paragraph_format.left_indent = Inches(0.25)
     
-    def _build_education_section(self):
+    def _build_education_section(self) -> None:
         """Build the education section."""
         self._add_section_title("EDUCATION")
         
@@ -290,7 +296,7 @@ class DOCXGenerator(BaseGenerator):
                     space_after=6,
                 )
     
-    def _build_skills_section(self):
+    def _build_skills_section(self) -> None:
         """Build the skills section."""
         self._add_section_title("SKILLS")
         
@@ -317,7 +323,7 @@ class DOCXGenerator(BaseGenerator):
                     run.font.size = Pt(10)
                     run.font.color.rgb = self.theme["primary_color"]
     
-    def _build_projects_section(self):
+    def _build_projects_section(self) -> None:
         """Build the projects section."""
         self._add_section_title("PROJECTS")
         
@@ -358,7 +364,7 @@ class DOCXGenerator(BaseGenerator):
                     )
                     para.paragraph_format.left_indent = Inches(0.25)
     
-    def _build_certificates_section(self):
+    def _build_certificates_section(self) -> None:
         """Build the certificates section."""
         self._add_section_title("CERTIFICATES")
         
@@ -385,7 +391,7 @@ class DOCXGenerator(BaseGenerator):
                     space_after=6,
                 )
     
-    def _build_awards_section(self):
+    def _build_awards_section(self) -> None:
         """Build the awards section."""
         self._add_section_title("AWARDS")
         
@@ -420,7 +426,7 @@ class DOCXGenerator(BaseGenerator):
                     space_after=6,
                 )
     
-    def _build_publications_section(self):
+    def _build_publications_section(self) -> None:
         """Build the publications section."""
         self._add_section_title("PUBLICATIONS")
         
@@ -455,7 +461,7 @@ class DOCXGenerator(BaseGenerator):
                     space_after=6,
                 )
     
-    def _build_volunteer_section(self):
+    def _build_volunteer_section(self) -> None:
         """Build the volunteer section."""
         self._add_section_title("VOLUNTEER")
         
@@ -501,7 +507,7 @@ class DOCXGenerator(BaseGenerator):
                     )
                     para.paragraph_format.left_indent = Inches(0.25)
     
-    def _build_languages_section(self):
+    def _build_languages_section(self) -> None:
         """Build the languages section."""
         self._add_section_title("LANGUAGES")
         
@@ -521,7 +527,7 @@ class DOCXGenerator(BaseGenerator):
                 space_after=6,
             )
     
-    def _build_interests_section(self):
+    def _build_interests_section(self) -> None:
         """Build the interests section."""
         self._add_section_title("INTERESTS")
         
@@ -542,7 +548,7 @@ class DOCXGenerator(BaseGenerator):
                     run.font.size = Pt(10)
                     run.font.color.rgb = self.theme["primary_color"]
     
-    def _build_references_section(self):
+    def _build_references_section(self) -> None:
         """Build the references section."""
         self._add_section_title("REFERENCES")
         

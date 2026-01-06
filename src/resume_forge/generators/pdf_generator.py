@@ -1,11 +1,13 @@
 """Native PDF generator using ReportLab."""
 
 from pathlib import Path
+from typing import Any
 
 from reportlab.lib import colors
+from reportlab.lib.colors import Color
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 from reportlab.lib.pagesizes import letter, A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle, StyleSheet1
 from reportlab.lib.units import inch
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -18,6 +20,7 @@ from reportlab.platypus import (
     ListFlowable,
     ListItem,
     HRFlowable,
+    Flowable,
 )
 
 from ..schema import Resume
@@ -41,7 +44,7 @@ def _find_font_via_fc(font_name: str) -> str | None:
     return None
 
 
-def _register_unicode_fonts():
+def _register_unicode_fonts() -> None:
     """Register Unicode-capable fonts for proper character support."""
     fonts_to_register = {
         "LiberationSans": "Liberation Sans:style=Regular",
@@ -100,13 +103,17 @@ class PDFGenerator(BaseGenerator):
         },
     }
     
-    def __init__(self, resume: Resume, style: str = "professional", page_size: str = "letter"):
+    page_size: tuple[float, float]
+    theme: dict[str, Any]
+    styles: StyleSheet1
+    
+    def __init__(self, resume: Resume, style: str = "professional", page_size: str = "letter") -> None:
         super().__init__(resume, style)
         self.page_size = letter if page_size == "letter" else A4
         self.theme = self.STYLES.get(style, self.STYLES["professional"])
         self._setup_styles()
     
-    def _setup_styles(self):
+    def _setup_styles(self) -> None:
         """Set up paragraph styles for the document."""
         self.styles = getSampleStyleSheet()
         
@@ -240,7 +247,7 @@ class PDFGenerator(BaseGenerator):
         
         doc.build(story)
     
-    def _build_header(self) -> list:
+    def _build_header(self) -> list[Flowable]:
         """Build the header section with name, label, and contact info."""
         elements = []
         basics = self.resume.basics
@@ -289,7 +296,7 @@ class PDFGenerator(BaseGenerator):
         
         return elements
     
-    def _section_divider(self):
+    def _section_divider(self) -> HRFlowable:
         """Create a section divider line."""
         return HRFlowable(
             width="100%",
@@ -350,7 +357,7 @@ class PDFGenerator(BaseGenerator):
         }
         return url_templates.get(network_lower)
     
-    def _build_work_section(self) -> list:
+    def _build_work_section(self) -> list[Flowable]:
         """Build the work experience section."""
         elements = []
         elements.append(Paragraph("EXPERIENCE", self.styles["SectionTitle"]))
@@ -379,7 +386,7 @@ class PDFGenerator(BaseGenerator):
         
         return elements
     
-    def _build_education_section(self) -> list:
+    def _build_education_section(self) -> list[Flowable]:
         """Build the education section."""
         elements = []
         elements.append(Paragraph("EDUCATION", self.styles["SectionTitle"]))
@@ -411,7 +418,7 @@ class PDFGenerator(BaseGenerator):
         
         return elements
     
-    def _build_skills_section(self) -> list:
+    def _build_skills_section(self) -> list[Flowable]:
         """Build the skills section."""
         elements = []
         elements.append(Paragraph("SKILLS", self.styles["SectionTitle"]))
@@ -429,7 +436,7 @@ class PDFGenerator(BaseGenerator):
         elements.append(Spacer(1, 6))
         return elements
     
-    def _build_projects_section(self) -> list:
+    def _build_projects_section(self) -> list[Flowable]:
         """Build the projects section."""
         elements = []
         elements.append(Paragraph("PROJECTS", self.styles["SectionTitle"]))
@@ -456,7 +463,7 @@ class PDFGenerator(BaseGenerator):
         
         return elements
     
-    def _build_certificates_section(self) -> list:
+    def _build_certificates_section(self) -> list[Flowable]:
         """Build the certificates section."""
         elements = []
         elements.append(Paragraph("CERTIFICATES", self.styles["SectionTitle"]))
@@ -477,7 +484,7 @@ class PDFGenerator(BaseGenerator):
         
         return elements
     
-    def _build_awards_section(self) -> list:
+    def _build_awards_section(self) -> list[Flowable]:
         """Build the awards section."""
         elements = []
         elements.append(Paragraph("AWARDS", self.styles["SectionTitle"]))
@@ -501,7 +508,7 @@ class PDFGenerator(BaseGenerator):
         
         return elements
     
-    def _build_publications_section(self) -> list:
+    def _build_publications_section(self) -> list[Flowable]:
         """Build the publications section."""
         elements = []
         elements.append(Paragraph("PUBLICATIONS", self.styles["SectionTitle"]))
@@ -525,7 +532,7 @@ class PDFGenerator(BaseGenerator):
         
         return elements
     
-    def _build_volunteer_section(self) -> list:
+    def _build_volunteer_section(self) -> list[Flowable]:
         """Build the volunteer section."""
         elements = []
         elements.append(Paragraph("VOLUNTEER", self.styles["SectionTitle"]))
@@ -554,7 +561,7 @@ class PDFGenerator(BaseGenerator):
         
         return elements
     
-    def _build_languages_section(self) -> list:
+    def _build_languages_section(self) -> list[Flowable]:
         """Build the languages section."""
         elements = []
         elements.append(Paragraph("LANGUAGES", self.styles["SectionTitle"]))
@@ -573,7 +580,7 @@ class PDFGenerator(BaseGenerator):
         elements.append(Spacer(1, 6))
         return elements
     
-    def _build_interests_section(self) -> list:
+    def _build_interests_section(self) -> list[Flowable]:
         """Build the interests section."""
         elements = []
         elements.append(Paragraph("INTERESTS", self.styles["SectionTitle"]))
@@ -588,7 +595,7 @@ class PDFGenerator(BaseGenerator):
         elements.append(Spacer(1, 6))
         return elements
     
-    def _build_references_section(self) -> list:
+    def _build_references_section(self) -> list[Flowable]:
         """Build the references section."""
         elements = []
         elements.append(Paragraph("REFERENCES", self.styles["SectionTitle"]))

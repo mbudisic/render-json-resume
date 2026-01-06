@@ -9,7 +9,10 @@ from ..schema import Resume
 class BaseGenerator(ABC):
     """Abstract base class for document generators."""
     
-    def __init__(self, resume: Resume, style: str = "professional"):
+    resume: Resume
+    style: str
+    
+    def __init__(self, resume: Resume, style: str = "professional") -> None:
         self.resume = resume
         self.style = style
     

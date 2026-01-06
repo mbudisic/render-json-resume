@@ -3,6 +3,7 @@
 import json
 import sys
 from pathlib import Path
+from typing import Any
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 
@@ -13,7 +14,7 @@ from .schema import Resume
 from .generators import PDFGenerator, DOCXGenerator
 
 
-AVAILABLE_STYLES = ["professional", "modern", "elegant", "minimal"]
+AVAILABLE_STYLES: list[str] = ["professional", "modern", "elegant", "minimal"]
 
 
 def is_url(path: str) -> bool:
@@ -21,7 +22,7 @@ def is_url(path: str) -> bool:
     return path.startswith("http://") or path.startswith("https://")
 
 
-def fetch_json_from_url(url: str) -> dict:
+def fetch_json_from_url(url: str) -> dict[str, Any]:
     """Fetch and parse JSON from a URL."""
     request = Request(url, headers={"User-Agent": "resume-forge/0.1.0"})
     try:
@@ -38,7 +39,7 @@ def fetch_json_from_url(url: str) -> dict:
 
 @click.group()
 @click.version_option(version="0.1.0", prog_name="resume-forge")
-def main():
+def main() -> None:
     """Resume Forge - Convert JSON Resume to native PDF or DOCX.
     
     A CLI utility that generates professional resumes from JSON Resume format
@@ -68,7 +69,7 @@ def main():
     default="letter",
     help="Page size for PDF output.",
 )
-def convert(input_source: str, output_file: Path, format: str, style: str, page_size: str):
+def convert(input_source: str, output_file: Path, format: str | None, style: str, page_size: str) -> None:
     """Convert a JSON Resume file to PDF or DOCX.
     
     INPUT_SOURCE: Path to JSON Resume file or HTTP/HTTPS URL.
@@ -140,7 +141,7 @@ def convert(input_source: str, output_file: Path, format: str, style: str, page_
 
 
 @main.command()
-def styles():
+def styles() -> None:
     """List available resume styles."""
     click.echo("Available styles:")
     click.echo()
@@ -158,7 +159,7 @@ def styles():
 
 
 @main.command()
-def schema():
+def schema() -> None:
     """Show JSON Resume schema information."""
     click.echo("JSON Resume Schema")
     click.echo("=" * 50)
@@ -188,7 +189,7 @@ def schema():
 
 @main.command()
 @click.argument("input_source")
-def validate(input_source: str):
+def validate(input_source: str) -> None:
     """Validate a JSON Resume file.
     
     INPUT_SOURCE: Path to JSON Resume file or HTTP/HTTPS URL.

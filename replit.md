@@ -48,8 +48,26 @@ resume-forge styles
 ```
 
 ## Recent Changes
+- 2026-01-06: Added comprehensive type annotations to all functions and methods
+- 2026-01-06: Created unit test suite with 65 concept-based tests (pytest)
+- 2026-01-06: Added automatic profile URL generation for 40+ social networks
+- 2026-01-06: Added clickable hyperlinks to PDFs (email, URLs, profiles)
+- 2026-01-06: Switched to Liberation Sans fonts for professional Helvetica-like appearance
 - 2026-01-06: Added DEVELOPERS.md with code architecture documentation
 - 2026-01-05: Initial implementation of Resume Forge CLI
+
+## Testing
+
+Run the test suite:
+```bash
+pytest tests/ -v
+```
+
+Test categories:
+- `test_schema.py` - JSON Resume schema validation
+- `test_generators.py` - PDF/DOCX document generation
+- `test_cli.py` - CLI command functionality
+- `test_unicode.py` - Unicode and internationalization support
 
 ## Technologies
 - Python 3.11
