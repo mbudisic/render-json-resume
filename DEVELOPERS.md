@@ -21,7 +21,9 @@ This document provides an overview of the codebase architecture and entry points
 │   ├── test_cli.py             # CLI command tests
 │   └── test_unicode.py         # Unicode/i18n support tests
 ├── .github/workflows/          # CI/CD
-│   └── tests.yml               # GitHub Actions test workflow
+│   ├── tests.yml               # GitHub Actions test workflow
+│   └── build-executables.yml   # Cross-platform executable builds
+├── Dockerfile                  # Podman/Docker container build
 ├── sample_resume.json          # Example JSON Resume for testing
 ├── output/                     # Generated documents (gitignored)
 ├── pyproject.toml              # Package configuration and dependencies
@@ -162,11 +164,42 @@ Tests are **concept-based**, not trivial type checks:
 
 ## CI/CD
 
-GitHub Actions workflow (`.github/workflows/tests.yml`):
+### Test Workflow (`.github/workflows/tests.yml`)
 - Runs on push/PR to `main` or `master`
 - Sets up Python 3.11 with pip caching
 - Installs system fonts (Liberation Sans)
 - Runs pytest with coverage report
+
+### Build Executables Workflow (`.github/workflows/build-executables.yml`)
+- Triggers on version tags (`v*`) or manual dispatch
+- Uses PyInstaller to compile single-file executables
+- Builds in parallel for Linux, macOS, and Windows
+- Creates GitHub Release with all executables attached
+
+To release:
+```bash
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+```
+
+## Docker/Podman
+
+The `Dockerfile` creates a containerized version of the CLI:
+
+```bash
+# Build
+podman build -t resume-forge .
+
+# Usage (mount files via /data volume)
+podman run -v $(pwd):/data resume-forge convert resume.json output.pdf
+podman run -v $(pwd):/data resume-forge validate resume.json
+podman run resume-forge styles
+```
+
+The container:
+- Uses Python 3.11 slim base image
+- Runs as non-root user for security
+- Sets `/data` as working directory for file access
 
 ## Adding a New Style
 

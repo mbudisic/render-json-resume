@@ -18,15 +18,33 @@ A CLI utility to convert JSON Resume to native PDF or DOCX documents.
 
 ## Installation
 
+### From pip
+
 ```bash
 pip install resume-forge
 ```
 
-Or install from source:
+### From source
 
 ```bash
 pip install -e .
 ```
+
+### Using Docker/Podman
+
+```bash
+# Build the container
+podman build -t resume-forge .
+
+# Run commands (mount current directory as /data)
+podman run -v $(pwd):/data resume-forge convert resume.json output.pdf
+podman run -v $(pwd):/data resume-forge convert resume.json output.docx --style modern
+podman run resume-forge styles
+```
+
+### Pre-built Executables
+
+Download standalone executables for Linux, macOS, or Windows from the [Releases](https://github.com/mbudisic/render-json-resume/releases) page. No Python installation required.
 
 ## Usage
 
@@ -75,6 +93,17 @@ resume-forge styles
 
 This tool supports the full JSON Resume schema. For more information, visit:
 https://jsonresume.org/schema
+
+## Building Executables
+
+The project includes a GitHub Actions workflow that automatically builds standalone executables for Linux, macOS, and Windows when you create a version tag:
+
+```bash
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+```
+
+Executables are attached to the GitHub Release automatically.
 
 ## License
 
