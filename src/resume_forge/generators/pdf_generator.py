@@ -24,17 +24,39 @@ from ..schema import Resume
 from .base import BaseGenerator
 
 
+def _find_font_via_fc(font_name: str) -> str | None:
+    """Find a font file using fontconfig (fc-match)."""
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["fc-match", "-f", "%{file}", font_name],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except Exception:
+        pass
+    return None
+
+
 def _register_unicode_fonts():
-    """Register Unicode-capable fonts (DejaVu) for proper character support."""
-    font_paths = {
-        "DejaVuSans": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "DejaVuSans-Bold": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "DejaVuSerif": "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
-        "DejaVuSerif-Bold": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+    """Register Unicode-capable fonts for proper character support."""
+    fonts_to_register = {
+        "LiberationSans": "Liberation Sans:style=Regular",
+        "LiberationSans-Bold": "Liberation Sans:style=Bold",
+        "LiberationSerif": "Liberation Serif:style=Regular",
+        "LiberationSerif-Bold": "Liberation Serif:style=Bold",
+        "DejaVuSans": "DejaVu Sans:style=Book",
+        "DejaVuSans-Bold": "DejaVu Sans:style=Bold",
+        "DejaVuSerif": "DejaVu Serif:style=Book",
+        "DejaVuSerif-Bold": "DejaVu Serif:style=Bold",
     }
     
-    for font_name, font_path in font_paths.items():
-        if Path(font_path).exists():
+    for font_name, fc_pattern in fonts_to_register.items():
+        font_path = _find_font_via_fc(fc_pattern)
+        if font_path and Path(font_path).exists():
             try:
                 pdfmetrics.registerFont(TTFont(font_name, font_path))
             except Exception:
@@ -52,29 +74,29 @@ class PDFGenerator(BaseGenerator):
             "primary_color": colors.HexColor("#2c3e50"),
             "secondary_color": colors.HexColor("#7f8c8d"),
             "accent_color": colors.HexColor("#3498db"),
-            "font_name": "DejaVuSans",
-            "font_name_bold": "DejaVuSans-Bold",
+            "font_name": "LiberationSans",
+            "font_name_bold": "LiberationSans-Bold",
         },
         "modern": {
             "primary_color": colors.HexColor("#1a1a2e"),
             "secondary_color": colors.HexColor("#4a4a4a"),
             "accent_color": colors.HexColor("#e94560"),
-            "font_name": "DejaVuSans",
-            "font_name_bold": "DejaVuSans-Bold",
+            "font_name": "LiberationSans",
+            "font_name_bold": "LiberationSans-Bold",
         },
         "elegant": {
             "primary_color": colors.HexColor("#2d3436"),
             "secondary_color": colors.HexColor("#636e72"),
             "accent_color": colors.HexColor("#6c5ce7"),
-            "font_name": "DejaVuSerif",
-            "font_name_bold": "DejaVuSerif-Bold",
+            "font_name": "LiberationSerif",
+            "font_name_bold": "LiberationSerif-Bold",
         },
         "minimal": {
             "primary_color": colors.black,
             "secondary_color": colors.HexColor("#555555"),
             "accent_color": colors.HexColor("#000000"),
-            "font_name": "DejaVuSans",
-            "font_name_bold": "DejaVuSans-Bold",
+            "font_name": "LiberationSans",
+            "font_name_bold": "LiberationSans-Bold",
         },
     }
     
