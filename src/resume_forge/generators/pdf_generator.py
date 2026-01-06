@@ -270,11 +270,14 @@ class PDFGenerator(BaseGenerator):
         if basics.profiles:
             profile_parts = []
             for profile in basics.profiles:
-                if profile.url:
-                    display = f"{profile.network}: {profile.username}" if profile.network and profile.username else profile.url
-                    profile_parts.append(self._make_link(profile.url, display))
-                elif profile.network and profile.username:
-                    profile_parts.append(f"{profile.network}: {profile.username}")
+                url = profile.url
+                if not url and profile.network and profile.username:
+                    url = self._get_profile_url(profile.network, profile.username)
+                display = f"{profile.network}: {profile.username}" if profile.network and profile.username else (profile.url or "")
+                if url and display:
+                    profile_parts.append(self._make_link(url, display))
+                elif display:
+                    profile_parts.append(display)
             if profile_parts:
                 elements.append(Paragraph(" | ".join(profile_parts), self.styles["Contact"]))
         
@@ -300,6 +303,52 @@ class PDFGenerator(BaseGenerator):
         """Create a hyperlink in ReportLab Paragraph format."""
         accent = self.theme["accent_color"].hexval() if hasattr(self.theme["accent_color"], "hexval") else "#3498db"
         return f'<a href="{url}" color="{accent}">{text}</a>'
+    
+    def _get_profile_url(self, network: str, username: str) -> str | None:
+        """Generate profile URL from network name and username."""
+        network_lower = network.lower()
+        url_templates = {
+            "github": f"https://github.com/{username}",
+            "linkedin": f"https://linkedin.com/in/{username}",
+            "twitter": f"https://twitter.com/{username}",
+            "x": f"https://x.com/{username}",
+            "facebook": f"https://facebook.com/{username}",
+            "instagram": f"https://instagram.com/{username}",
+            "youtube": f"https://youtube.com/@{username}",
+            "tiktok": f"https://tiktok.com/@{username}",
+            "mastodon": f"https://mastodon.social/@{username}",
+            "bluesky": f"https://bsky.app/profile/{username}",
+            "threads": f"https://threads.net/@{username}",
+            "reddit": f"https://reddit.com/user/{username}",
+            "stackoverflow": f"https://stackoverflow.com/users/{username}",
+            "stack overflow": f"https://stackoverflow.com/users/{username}",
+            "medium": f"https://medium.com/@{username}",
+            "dev": f"https://dev.to/{username}",
+            "dev.to": f"https://dev.to/{username}",
+            "hashnode": f"https://hashnode.com/@{username}",
+            "dribbble": f"https://dribbble.com/{username}",
+            "behance": f"https://behance.net/{username}",
+            "codepen": f"https://codepen.io/{username}",
+            "gitlab": f"https://gitlab.com/{username}",
+            "bitbucket": f"https://bitbucket.org/{username}",
+            "google scholar": f"https://scholar.google.com/citations?user={username}",
+            "googlescholar": f"https://scholar.google.com/citations?user={username}",
+            "orcid": f"https://orcid.org/{username}",
+            "researchgate": f"https://researchgate.net/profile/{username}",
+            "academia": f"https://independent.academia.edu/{username}",
+            "soundcloud": f"https://soundcloud.com/{username}",
+            "spotify": f"https://open.spotify.com/artist/{username}",
+            "twitch": f"https://twitch.tv/{username}",
+            "discord": f"https://discord.com/users/{username}",
+            "telegram": f"https://t.me/{username}",
+            "whatsapp": f"https://wa.me/{username}",
+            "skype": f"skype:{username}?chat",
+            "pinterest": f"https://pinterest.com/{username}",
+            "snapchat": f"https://snapchat.com/add/{username}",
+            "npm": f"https://npmjs.com/~{username}",
+            "pypi": f"https://pypi.org/user/{username}",
+        }
+        return url_templates.get(network_lower)
     
     def _build_work_section(self) -> list:
         """Build the work experience section."""
