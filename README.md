@@ -1,7 +1,7 @@
 # Resume Forge
 
 [![Tests](https://github.com/mbudisic/render-json-resume/actions/workflows/tests.yml/badge.svg)](https://github.com/mbudisic/render-json-resume/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/mbudisic/render-json-resume/branch/main/graph/badge.svg)](https://codecov.io/gh/mbudisic/render-json-resume)
+![Coverage](./coverage.svg)
 [![Replit](https://img.shields.io/badge/Developed%20on-Replit-F26207?logo=replit&logoColor=white)](https://replit.com)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)](https://www.python.org/)
 
