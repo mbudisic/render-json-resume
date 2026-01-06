@@ -7,6 +7,8 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
@@ -22,6 +24,26 @@ from ..schema import Resume
 from .base import BaseGenerator
 
 
+def _register_unicode_fonts():
+    """Register Unicode-capable fonts (DejaVu) for proper character support."""
+    font_paths = {
+        "DejaVuSans": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "DejaVuSans-Bold": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "DejaVuSerif": "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+        "DejaVuSerif-Bold": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+    }
+    
+    for font_name, font_path in font_paths.items():
+        if Path(font_path).exists():
+            try:
+                pdfmetrics.registerFont(TTFont(font_name, font_path))
+            except Exception:
+                pass
+
+
+_register_unicode_fonts()
+
+
 class PDFGenerator(BaseGenerator):
     """Generate native PDF documents from JSON Resume."""
     
@@ -30,29 +52,29 @@ class PDFGenerator(BaseGenerator):
             "primary_color": colors.HexColor("#2c3e50"),
             "secondary_color": colors.HexColor("#7f8c8d"),
             "accent_color": colors.HexColor("#3498db"),
-            "font_name": "Helvetica",
-            "font_name_bold": "Helvetica-Bold",
+            "font_name": "DejaVuSans",
+            "font_name_bold": "DejaVuSans-Bold",
         },
         "modern": {
             "primary_color": colors.HexColor("#1a1a2e"),
             "secondary_color": colors.HexColor("#4a4a4a"),
             "accent_color": colors.HexColor("#e94560"),
-            "font_name": "Helvetica",
-            "font_name_bold": "Helvetica-Bold",
+            "font_name": "DejaVuSans",
+            "font_name_bold": "DejaVuSans-Bold",
         },
         "elegant": {
             "primary_color": colors.HexColor("#2d3436"),
             "secondary_color": colors.HexColor("#636e72"),
             "accent_color": colors.HexColor("#6c5ce7"),
-            "font_name": "Times-Roman",
-            "font_name_bold": "Times-Bold",
+            "font_name": "DejaVuSerif",
+            "font_name_bold": "DejaVuSerif-Bold",
         },
         "minimal": {
             "primary_color": colors.black,
             "secondary_color": colors.HexColor("#555555"),
             "accent_color": colors.HexColor("#000000"),
-            "font_name": "Helvetica",
-            "font_name_bold": "Helvetica-Bold",
+            "font_name": "DejaVuSans",
+            "font_name_bold": "DejaVuSans-Bold",
         },
     }
     
