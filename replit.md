@@ -19,7 +19,8 @@ Resume Forge is a CLI utility that converts JSON Resume files to native PDF or D
 ├── sample_resume.json       # Example JSON Resume file
 ├── output/                  # Generated documents
 ├── pyproject.toml           # Project configuration
-└── README.md               # User documentation
+├── README.md                # User documentation
+└── DEVELOPERS.md            # Developer guide and architecture
 ```
 
 ## Key Features
@@ -47,6 +48,7 @@ resume-forge styles
 ```
 
 ## Recent Changes
+- 2026-01-06: Added DEVELOPERS.md with code architecture documentation
 - 2026-01-05: Initial implementation of Resume Forge CLI
 
 ## Technologies
