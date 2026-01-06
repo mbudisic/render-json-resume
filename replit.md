@@ -47,7 +47,19 @@ resume-forge validate resume.json
 resume-forge styles
 ```
 
+## GitHub Actions
+
+The project includes a GitHub workflow (`.github/workflows/build-executables.yml`) that compiles the CLI into single-file executables for:
+- Linux (x64)
+- macOS (x64)
+- Windows (x64)
+
+The workflow triggers on:
+- Version tags (v*) - creates a GitHub release with all executables
+- Manual dispatch - builds and uploads artifacts for testing
+
 ## Recent Changes
+- 2026-01-06: Added GitHub Actions workflow for cross-platform executable builds
 - 2026-01-06: Added comprehensive type annotations to all functions and methods
 - 2026-01-06: Created unit test suite with 65 concept-based tests (pytest)
 - 2026-01-06: Added automatic profile URL generation for 40+ social networks
