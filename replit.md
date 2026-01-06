@@ -47,6 +47,24 @@ resume-forge validate resume.json
 resume-forge styles
 ```
 
+## Docker/Podman
+
+Build and run using Docker or Podman:
+
+```bash
+# Build the image
+podman build -t resume-forge .
+
+# Convert a resume (mount current directory as /data)
+podman run -v $(pwd):/data resume-forge convert resume.json output.pdf
+
+# List available styles
+podman run resume-forge styles
+
+# Validate a resume
+podman run -v $(pwd):/data resume-forge validate resume.json
+```
+
 ## GitHub Actions
 
 The project includes a GitHub workflow (`.github/workflows/build-executables.yml`) that compiles the CLI into single-file executables for:
@@ -59,6 +77,7 @@ The workflow triggers on:
 - Manual dispatch - builds and uploads artifacts for testing
 
 ## Recent Changes
+- 2026-01-06: Added Dockerfile for Podman/Docker containerized usage
 - 2026-01-06: Added GitHub Actions workflow for cross-platform executable builds
 - 2026-01-06: Added comprehensive type annotations to all functions and methods
 - 2026-01-06: Created unit test suite with 65 concept-based tests (pytest)
