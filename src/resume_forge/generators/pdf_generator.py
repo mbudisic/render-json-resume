@@ -253,11 +253,11 @@ class PDFGenerator(BaseGenerator):
         
         contact_parts = []
         if basics.email:
-            contact_parts.append(basics.email)
+            contact_parts.append(self._make_link(f"mailto:{basics.email}", basics.email))
         if basics.phone:
             contact_parts.append(basics.phone)
         if basics.url:
-            contact_parts.append(basics.url)
+            contact_parts.append(self._make_link(basics.url, basics.url))
         if basics.location:
             loc = basics.location
             loc_parts = [p for p in [loc.city, loc.region, loc.countryCode] if p]
@@ -270,10 +270,11 @@ class PDFGenerator(BaseGenerator):
         if basics.profiles:
             profile_parts = []
             for profile in basics.profiles:
-                if profile.network and profile.username:
+                if profile.url:
+                    display = f"{profile.network}: {profile.username}" if profile.network and profile.username else profile.url
+                    profile_parts.append(self._make_link(profile.url, display))
+                elif profile.network and profile.username:
                     profile_parts.append(f"{profile.network}: {profile.username}")
-                elif profile.url:
-                    profile_parts.append(profile.url)
             if profile_parts:
                 elements.append(Paragraph(" | ".join(profile_parts), self.styles["Contact"]))
         
@@ -294,6 +295,11 @@ class PDFGenerator(BaseGenerator):
             spaceBefore=8,
             spaceAfter=8,
         )
+    
+    def _make_link(self, url: str, text: str) -> str:
+        """Create a hyperlink in ReportLab Paragraph format."""
+        accent = self.theme["accent_color"].hexval() if hasattr(self.theme["accent_color"], "hexval") else "#3498db"
+        return f'<a href="{url}" color="{accent}">{text}</a>'
     
     def _build_work_section(self) -> list:
         """Build the work experience section."""
@@ -395,7 +401,7 @@ class PDFGenerator(BaseGenerator):
                     elements.append(Paragraph(f"• {highlight}", self.styles["BulletItem"]))
             
             if project.url:
-                elements.append(Paragraph(project.url, self.styles["ItemSubtitle"]))
+                elements.append(Paragraph(self._make_link(project.url, project.url), self.styles["ItemSubtitle"]))
             
             elements.append(Spacer(1, 6))
         
