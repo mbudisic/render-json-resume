@@ -15,6 +15,13 @@ This document provides an overview of the codebase architecture and entry points
 │       ├── base.py             # Abstract base class for generators
 │       ├── pdf_generator.py    # ReportLab-based PDF generation
 │       └── docx_generator.py   # python-docx-based DOCX generation
+├── tests/                      # Unit test suite (pytest)
+│   ├── test_schema.py          # JSON Resume schema validation tests
+│   ├── test_generators.py      # PDF/DOCX generation tests
+│   ├── test_cli.py             # CLI command tests
+│   └── test_unicode.py         # Unicode/i18n support tests
+├── .github/workflows/          # CI/CD
+│   └── tests.yml               # GitHub Actions test workflow
 ├── sample_resume.json          # Example JSON Resume for testing
 ├── output/                     # Generated documents (gitignored)
 ├── pyproject.toml              # Package configuration and dependencies
@@ -29,7 +36,7 @@ This document provides an overview of the codebase architecture and entry points
 JSON Resume File → schema.py (validation) → Generator → PDF/DOCX File
 ```
 
-1. User provides a JSON Resume file
+1. User provides a JSON Resume file (local or URL)
 2. `schema.py` validates and parses it into Pydantic models
 3. The appropriate generator (`PDFGenerator` or `DOCXGenerator`) renders the document
 4. Output is written to the specified path
@@ -72,6 +79,22 @@ Uses ReportLab's Platypus for native PDF generation.
 - `_build_*_section()` methods: Each returns a list of Platypus flowables
 - `generate()`: Assembles all sections into a SimpleDocTemplate
 
+**Font handling:**
+- Uses Liberation Sans fonts (Helvetica-like) for professional appearance
+- Font paths discovered via `fc-match` (fontconfig) for cross-platform compatibility
+- Fallback to ReportLab's built-in Helvetica if Liberation fonts unavailable
+
+**Hyperlink support:**
+- Email addresses become `mailto:` links
+- Personal URLs and profile URLs are clickable
+- Links styled with theme accent color
+
+**Profile URL auto-generation:**
+- `PROFILE_URL_TEMPLATES` dict maps 40+ social networks to URL patterns
+- `_get_profile_url()` generates URLs from network name + username
+- Case-insensitive network matching
+- Returns `None` for unknown networks (falls back to provided URL)
+
 **To add a new PDF style:**
 1. Add entry to `STYLES` dict with colors and fonts
 2. Update `AVAILABLE_STYLES` in `cli.py`
@@ -111,6 +134,41 @@ Both `convert` and `validate` accept HTTP/HTTPS URLs as input. The `is_url()` he
 
 **To add a new CLI option:** Add to relevant command using Click decorators.
 
+## Testing
+
+### Running Tests
+
+```bash
+pytest tests/ -v                    # Run all tests
+pytest tests/ -v --cov=src/resume_forge  # With coverage
+pytest tests/test_schema.py -v      # Run specific test file
+```
+
+### Test Categories
+
+| File | Purpose |
+|------|---------|
+| `test_schema.py` | JSON Resume schema validation, Pydantic model parsing |
+| `test_generators.py` | PDF/DOCX generation, all styles, profile URL generation, hyperlinks |
+| `test_cli.py` | CLI commands (convert, validate, styles, schema) |
+| `test_unicode.py` | Unicode support (Croatian, Japanese, Chinese, Arabic), special characters |
+
+### Test Design Philosophy
+
+Tests are **concept-based**, not trivial type checks:
+- Test actual behaviors (date formatting output, URL generation logic)
+- Test document creation succeeds and produces valid files
+- Test edge cases (empty resumes, Unicode, special characters)
+
+## CI/CD
+
+GitHub Actions workflow (`.github/workflows/tests.yml`):
+- Runs on push/PR to `main` or `master`
+- Sets up Python 3.11 with pip caching
+- Installs system fonts (Liberation Sans)
+- Runs pytest with coverage
+- Generates and commits `coverage.svg` badge
+
 ## Adding a New Style
 
 1. **Define colors** in both generators:
@@ -140,12 +198,30 @@ Both `convert` and `validate` accept HTTP/HTTPS URLs as input. The `is_url()` he
 
 3. **Add description** in `styles()` command.
 
+## Adding a New Social Network Profile
+
+Add the network to `PROFILE_URL_TEMPLATES` in `pdf_generator.py`:
+
+```python
+PROFILE_URL_TEMPLATES: dict[str, str] = {
+    # ... existing entries ...
+    "newnetwork": "https://newnetwork.com/{username}",
+}
+```
+
+The `{username}` placeholder is replaced with the profile username. For networks with different URL patterns (e.g., query parameters), use the appropriate format:
+
+```python
+"google scholar": "https://scholar.google.com/citations?user={username}",
+```
+
 ## Adding a New Resume Section
 
 1. **Add Pydantic model** in `schema.py`
 2. **Add field to `Resume` class** in `schema.py`
 3. **Implement `_build_*_section()`** in both generators
 4. **Call the builder** from `generate()` in both generators
+5. **Add tests** in `test_generators.py`
 
 ## Adding a New Output Format
 
@@ -153,6 +229,17 @@ Both `convert` and `validate` accept HTTP/HTTPS URLs as input. The `is_url()` he
 2. **Export from `generators/__init__.py`**
 3. **Add format option** to `convert` command in `cli.py`
 4. **Handle format in convert logic**
+5. **Add tests** for the new format
+
+## Type Annotations
+
+The codebase uses modern Python type annotations throughout:
+- Union types: `str | None` (not `Optional[str]`)
+- Generic types: `list[str]`, `dict[str, Any]`
+- Return types on all public methods
+- Type hints improve IDE support and catch errors early
+
+Consider adding `mypy` to CI for static type checking.
 
 ## Dependencies
 
@@ -162,15 +249,8 @@ Both `convert` and `validate` accept HTTP/HTTPS URLs as input. The `is_url()` he
 | pydantic | JSON validation and data models |
 | reportlab | Native PDF generation |
 | python-docx | Native DOCX generation |
-
-## Testing
-
-Run the CLI directly:
-```bash
-resume-forge validate sample_resume.json
-resume-forge convert sample_resume.json output.pdf --style modern
-resume-forge convert sample_resume.json output.docx --style elegant
-```
+| pytest | Unit testing framework |
+| pytest-cov | Coverage reporting |
 
 ## Design Decisions
 
@@ -182,6 +262,10 @@ resume-forge convert sample_resume.json output.docx --style elegant
 
 4. **Separation of concerns**: Schema, generators, and CLI are independent. Generators can be used programmatically without the CLI.
 
+5. **Liberation Sans fonts**: Provides professional Helvetica-like appearance with full Unicode support across platforms.
+
+6. **Automatic profile URL generation**: Improves UX by not requiring users to provide full URLs for common networks.
+
 ## Common Modifications
 
 | Task | File(s) to modify |
@@ -189,6 +273,8 @@ resume-forge convert sample_resume.json output.docx --style elegant
 | Change fonts | `pdf_generator.py`, `docx_generator.py` |
 | Adjust margins | `generate()` in both generators |
 | Change section order | `generate()` in both generators |
-| Add resume section | `schema.py` + both generators |
+| Add resume section | `schema.py` + both generators + tests |
 | Change date format | `base.py` (`_format_date()`) |
 | Add CLI option | `cli.py` |
+| Add social network | `PROFILE_URL_TEMPLATES` in `pdf_generator.py` |
+| Modify link styling | `_make_link()` in `pdf_generator.py` |
