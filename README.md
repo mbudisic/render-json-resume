@@ -42,6 +42,12 @@ podman run -v $(pwd):/data resume-forge convert resume.json output.docx --style 
 podman run resume-forge styles
 ```
 
+macOS (rootless Podman) tip: if you see `Permission denied` writing to `/data`, run with your host UID/GID:
+
+```bash
+podman run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/data" resume-forge convert resume.json output.pdf
+```
+
 ### Pre-built Executables
 
 Download standalone executables for Linux, macOS, or Windows from the [Releases](https://github.com/mbudisic/render-json-resume/releases) page. No Python installation required.

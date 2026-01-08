@@ -201,6 +201,18 @@ The container:
 - Runs as non-root user for security
 - Sets `/data` as working directory for file access
 
+macOS (rootless Podman) tip:
+- If you hit host volume permission errors, run with your user UID/GID:
+  ```bash
+  podman run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/data" resume-forge convert resume.json output.pdf
+  ```
+
+## Recent Session Changes
+
+- `Dockerfile`: removed empty `apt-get install` step that broke Podman builds.
+- `Dockerfile`: copied `README.md` into the build context to satisfy `pyproject.toml` metadata.
+- `Dockerfile`: installed `fonts-liberation` and `fontconfig` to support ReportLab font discovery.
+
 ## Adding a New Style
 
 1. **Define colors** in both generators:
