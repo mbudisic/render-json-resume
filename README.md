@@ -48,6 +48,14 @@ macOS (rootless Podman) tip: if you see `Permission denied` writing to `/data`, 
 podman run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/data" resume-forge convert resume.json output.pdf
 ```
 
+For cases where you want the paths inside the container to match your host working directory (so absolute and relative paths are identical), mirror the host path and set the working directory:
+
+```bash
+podman run --rm --userns=keep-id --user "$(id -u):$(id -g)" \
+  -v "$PWD:$PWD" -w "$PWD" resume-forge \
+  convert resume.json output.pdf
+```
+
 ### Pre-built Executables
 
 Download standalone executables for Linux, macOS, or Windows from the [Releases](https://github.com/mbudisic/render-json-resume/releases) page. No Python installation required.
